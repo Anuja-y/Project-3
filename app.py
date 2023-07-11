@@ -1,3 +1,4 @@
+# Import dependencies
 from flask import Flask, render_template, jsonify
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
@@ -6,7 +7,7 @@ from sqlalchemy import create_engine
 
 Base = declarative_base()
 
-
+# Base class
 class Data(Base):
     __tablename__ = 'data'
     Country = Column(String(512), primary_key=True)
@@ -17,7 +18,7 @@ class Data(Base):
     Latitude = Column(Float)
     Longitude = Column(Float)
 
-
+# Engine and the session
 engine = create_engine('sqlite:///covid.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
@@ -25,6 +26,7 @@ session = DBSession()
 
 app = Flask(__name__)
 
+# Home page
 @app.route("/")
 def home():
     return render_template('index.html')
@@ -37,11 +39,13 @@ def welcome():
         
     )
 
+# Route for our data
 @app.route("/api/covid")
 def covid():
     results = session.query(Data).all()
     session.close()
 
+    # Loading data in geoJSON format
     geojson_data = {
         "type": "FeatureCollection",
         "features": []
@@ -67,5 +71,6 @@ def covid():
 
     return jsonify(geojson_data)
 
+# Run app
 if __name__ == '__main__':
     app.run()
